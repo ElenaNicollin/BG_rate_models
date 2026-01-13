@@ -1,0 +1,17 @@
+{"nuclei": {
+    "Proto":"#1F77B4", "STN": "#D62728", "FSI": "#FFD700", "D1":"#FFBB78", "D2": "#FF7F0E", "STR": "#FF7F0E", "Arky": "#2CA02C", "Ctx": "#9467BD",
+    "SNr": "#8C564B", "GPi": "#8C564B", "Th": "#7F7F7F"
+},
+"loops": {
+    "Proto loop": {"nuclei": ["Proto", "Proto"], "color": "#195F8F", "marker": "x", "x0": 400, "x0_tau_rat":[450,350], "x0_tau_monkey":[450,350],
+            "x0_delay_rat":[400,70], "x0_delay_monkey":[400,70]},
+    "STN loop": {"nuclei": ["Proto", "STN"], "color": "#A61E1E", "marker":"o", "x0": 100, "x0_tau_rat":[400,280], "x0_tau_monkey":[200,150],
+            "x0_delay_rat":[250,100], "x0_delay_monkey":[250,100]},
+    "FSI loop": {"nuclei": ["Proto", "FSI", "D2"], "color": "#CCAA00", "marker":"v", "x0": 100, "x0_tau_rat":[130,60], "x0_tau_monkey":[85,35],
+            "x0_delay_rat":[90,65], "x0_delay_monkey":[131,95]},
+    "Arky loop": {"nuclei": ["Proto", "Arky", "D2"], "color": "#217921", "marker": "^", "x0": 90, "x0_tau_rat":[104,45], "x0_tau_monkey":[78,35],
+            "x0_delay_rat":[90,60], "x0_delay_monkey":[131,95]},
+    "hyperdirect": {"nuclei": ["Ctx", "STN", "GPi", "Th"], "color": "#7747A3", "marker":"s", "x0": 87, "x0_tau_rat":[110,84], "x0_tau_monkey":[60,50],
+            "x0_delay_rat":[118,71], "x0_delay_monkey":[100,75]}
+}
+}

@@ -1,0 +1,220 @@
+{
+    "Proto": {
+        "properties": {
+            "id": "Proto",
+            "n_real": [46000, 0.7],
+            "type": "I",
+            "mean_FR": 65.1,
+            "sd_FR": 34.1
+            },
+        "outgoing_connections": {
+            "STN": {
+                "k_real": 442,
+                "mean_W": -1,
+                "mean_delay": 2.0e-3,
+                "mean_tau_decay": 5e-3
+            },
+            "FSI": {
+                "k_real": 67,
+                "mean_W": -1,
+                "mean_delay": 10e-3,
+                "mean_tau_decay": 5e-3
+            },
+            "Arky": {
+                "k_real": 104,
+                "mean_W": -1,
+                "mean_delay": 5e-3,
+                "mean_tau_decay": 5e-3
+            },
+            "Proto": {
+                "k_real": 104,
+                "mean_W": -1,
+                "mean_delay": 5e-3,
+                "mean_tau_decay": 5e-3
+            },
+            "GPi": {
+                "k_real":100,
+                "mean_W":-1,
+                "mean_delay":4.6e-3,
+                "mean_tau_decay":5e-3
+            }
+        }
+    },
+    
+    "STN":{
+        "properties": {
+            "id": "STN",
+            "n_real": 94000,
+            "type": "E",
+            "mean_FR": 27.6,
+            "sd_FR": 17.8,
+            "threshold":-0.8
+        },
+        "outgoing_connections": {
+            "Proto": {
+                "k_real": 1500,
+                "mean_W": 1,
+                "mean_delay": 5.5e-3,
+                "mean_tau_decay": 5e-3
+            },
+            "GPi": {
+                "k_sim": 446,
+                "mean_W": 1,
+                "mean_delay": 4.7e-3,
+                "mean_tau_decay":5e-3
+            }
+        }
+    },
+    
+    "FSI":{
+        "properties": {
+            "id": "FSI",
+            "n_real":[0.02, 2.79e6],
+            "type": "I",
+            "mean_FR": 6.21,
+            "sd_FR": 3.96
+        },
+        "outgoing_connections": {
+            "D1": {
+                "k_real": 51,
+                "mean_W": -1,
+                "mean_delay": 2e-3,
+                "mean_tau_decay": 5e-3
+            },
+            "D2": {
+                "k_real": 51,
+                "mean_W": -1,
+                "mean_delay": 2e-3,
+                "mean_tau_decay": 5e-3
+            }
+        }
+    },
+    
+    "D1": {
+        "properties": {
+            "id": "D1",
+            "n_real":[0.5, 30.4e6],
+            "type": "I",
+            "mean_FR": 1.14,
+            "sd_FR": 0.76
+        },
+        "outgoing_connections": {
+            "GPi": {
+                "k_real": 50000,
+                "mean_W": -1,
+                "mean_delay": 13.1e-3,
+                "mean_tau_decay": 5e-3
+            }
+        }
+    },
+    
+    "D2": {
+        "properties": {
+            "id": "D2",
+            "n_real":[0.5, 30.4e6],
+            "type": "I",
+            "mean_FR": 1.14,
+            "sd_FR": 0.76
+        },
+        "outgoing_connections": {
+            "Proto": {
+                "k_real": 20650,
+                "mean_W": -1,
+                "mean_delay": 10.5e-3,
+                "mean_tau_decay": 5e-3
+            }
+        }
+    },
+    
+    "Arky":{
+        "properties": {
+            "id": "Arky",
+            "n_real":[46000, 0.25],
+            "type": "I",
+            "mean_FR": 14.21,
+            "sd_FR": 1.04
+        },
+        "outgoing_connections": {
+            "D2": {
+                "k_sim": 10,
+                "mean_W": -1,
+                "mean_delay": 10e-3,
+                "mean_tau_decay": 5e-3
+            }
+        }
+    },
+    
+    "Ctx":{
+        "properties": {
+            "id": "Ctx",
+            "n_real":1e8,
+            "type": "E",
+            "mean_FR":11.6,
+            "sd_FR": 9.9,
+            "threshold":0.11
+        },
+        "outgoing_connections": {
+            "STN": {
+                "k_sim": 92,
+                "mean_W": 2,
+                "mean_delay": 5.8e-3,
+                "mean_tau_decay":5e-3
+            },
+            "FSI": {
+                "k_real": 10000,
+                "mean_W": 2,
+                "mean_delay": 10.2e-3,
+                "mean_tau_decay":5e-3
+            },
+            "D1": {
+                "k_real": 10000,
+                "mean_W": 2,
+                "mean_delay": 10.2e-3,
+                "mean_tau_decay":5e-3
+            },
+            "D2": {
+                "k_real": 10000,
+                "mean_W": 2,
+                "mean_delay": 10.2e-3,
+                "mean_tau_decay":5e-3
+            }
+        }
+    },
+    
+    "GPi":{
+        "properties": {
+            "id":"GPi",
+            "n_real": 150000,
+            "type": "I",
+            "mean_FR":58.5,
+            "sd_FR": 16.8,
+            "threshold":1.35
+        },
+        "outgoing_connections": {
+            "Th": {
+                "k_sim": 333,
+                "mean_W": -1,
+                "mean_delay": 5e-3,
+                "mean_tau_decay":5e-3
+            }
+        }
+    },
+    
+    "Th":{
+        "properties": {
+            "id":"Th",
+            "type": "E",
+            "mean_FR":18,
+            "sd_FR":12,
+            "threshold":-0.185
+        },
+        "outgoing_connections": {
+            "Ctx": {
+                "k_sim": 500,
+                "mean_W": 1,
+                "mean_delay": 5e-3,
+                "mean_tau_decay":5e-3
+            }
+        }
+    }
+}
