@@ -5,6 +5,10 @@ import random, json
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter, MaxNLocator, FixedLocator, FixedFormatter, AutoMinorLocator
 from itertools import combinations, combinations_with_replacement
+from astropy.stats import rayleightest
+
+from LIF_model import spikes_to_smoothed_mean_rate
+from utils import bandpass_filter
 
 
 def plot_table(W_dict):
@@ -321,7 +325,7 @@ def get_peak_frequency_from_coherence(rates1, rates2, same_pop, dt, window_size=
     return peak_freq, np.max(mean_Cxy_cropped)
 
 
-def plot_relative_phase_angles(rates, pops_sublist, ref_pop, dt, window_size=1, skip=0, loop_name=None, n_pairs=1000, freq_method="coherence", bin_size=1, normalize=True, ax=None):
+def plot_relative_phase_angles(rates, pops_sublist, ref_pop, dt, window_size=1, skip=0, loop_name=None, n_pairs=1000, freq_method="coherence", bin_size=1,  ax=None, normalize=True):
     if ax is None:
         ax = plt.gca()
 
@@ -353,31 +357,131 @@ def plot_relative_phase_angles(rates, pops_sublist, ref_pop, dt, window_size=1, 
         peak_freq = f[np.argmax(fft)]
     else:
         peak_freq = float(freq_method)
+    print("freq used for phase:",peak_freq)
 
     colors = json.load(open("params/graphical_params.json"))["nuclei"]
-    width = (2*np.pi) / 360
-    theta = np.linspace(np.pi, -np.pi, int(round(360/bin_size,0)), endpoint=False)[::-1]
+    n_bins = int(round(360/bin_size, 0))
+    width = (2*np.pi) / n_bins
+    theta = np.linspace(-np.pi, np.pi, n_bins, endpoint=False)
+    #  width = (2*np.pi) / 360
+    # theta = np.linspace(np.pi, -np.pi, int(round(360/bin_size,0)), endpoint=False)[::-1] ##create array backwards and reversing to get like startpoint=False and endpoint=True (?)
 
     rates_sublist = {k:rates[k] for k in pops_sublist}
     ref_data = rates_sublist[ref_pop][:,int(skip/dt):]
     for i,(pop, data) in enumerate(rates_sublist.items()):
+        print(pop)
         test_data = data[:,int(skip/dt):]
         angle_distrib = get_pop_phase_angles(test_data, ref_data, peak_freq=peak_freq, dt=dt, window_size=window_size, n_pairs=n_pairs, same_pop=(pop==ref_pop))
         
-        bar_data = np.histogram(np.where(angle_distrib==180, -180, angle_distrib), bins=int(round(360/bin_size,0)), range=(-180,180))[0]
+        bar_data = np.histogram(np.where(angle_distrib==180, -180, angle_distrib), bins=n_bins, range=(-180,180))[0]
         # print(np.sum(bar_data))
+        print("mean angle:",np.mean(angle_distrib))
+        print("n nonzero:", len(np.where(bar_data!=0)[0]))
         if normalize:
             ax.bar(theta, bar_data/np.max(bar_data), width=width, color=colors[pop], label=pop)
         else:
             ax.bar(theta, bar_data, width=width, color=colors[pop], label=pop)
         mean_angle = np.round(np.rad2deg(stat.circmean(np.deg2rad(angle_distrib), high = np.pi, low = -np.pi)), 1)
         std_angle = np.round(np.rad2deg(stat.circstd(np.deg2rad(angle_distrib), high = np.pi, low = -np.pi)), 1)
-        print(f"{pop}: {mean_angle}° ± {std_angle}°")
+        print(pop, mean_angle, std_angle)
         # ax.text(-0.3-0.1*i, 1.4, f"{mean_angle}° ± {std_angle}°", color=colors[pop])
+        ax.text(1.08, 0.6 - 0.07*i, f"{mean_angle}° ± {std_angle}°", color=colors[pop],
+                transform=ax.transAxes, ha='left', va='top')
     ax.set_yticks([])
+    ax.set_thetagrids(np.arange(0, 360, 45), labels=['0°', '45°', '90°', '135°', '±180°', '-135°', '-90°', '-45°'])
+
     ax.legend(loc="upper left", bbox_to_anchor=(.8 + np.cos(1.15)/2, .6 + np.sin(1.15)/2))
     ax.set_title(f"f={int(peak_freq)} Hz, n={n_pairs} random pairs")
 
+def get_ref_signal_peaks(spikes, ref_pop, dt, t_sim, skip):
+    ref_signal = spikes_to_smoothed_mean_rate({ref_pop: spikes[ref_pop]}, int(round(t_sim/dt, 0)), dt)[0][ref_pop]
+    ref_signal_filtered = bandpass_filter(ref_signal, 1/dt, 8, 70)
+    peak_f = get_peak_f_of_signal(ref_signal_filtered, dt)
+
+    amplitude_envelope = np.abs(sig.hilbert(ref_signal_filtered))
+    peak_height_min = np.percentile(amplitude_envelope, 0.96)
+    print(peak_height_min)
+    ref_peaks_t = sig.find_peaks(ref_signal_filtered, height=peak_height_min)[0]
+    if skip!=0:
+        ref_peaks_t = ref_peaks_t[ref_peaks_t >= int(round(skip/dt,0))]
+    # plt.plot(ref_signal_filtered)
+    # plt.plot(ref_peaks_t, ref_signal_filtered[ref_peaks_t], color="orange", ls=None, marker="x")
+    # plt.show()
+    return ref_peaks_t, peak_f
+
+def get_spike_phase_distributions(spikes, left_peak_series, right_peak_series):
+    pop_phases_distribs = []
+    rayleigh_pvalues = np.empty(len(spikes))
+    for i, neuron_spike_times in enumerate(spikes): #spikes are in time steps (not seconds), as are the peak series.
+        phases = np.empty(0)
+        for (left_peak, right_peak) in zip (left_peak_series, right_peak_series):
+            mask = (neuron_spike_times>=left_peak) & (neuron_spike_times<right_peak)
+            spikes_between_peaks = np.array(neuron_spike_times)[mask]
+            phases_for_those_spikes = 360 * (spikes_between_peaks - left_peak) / (right_peak - left_peak)
+            phases = np.append(phases, phases_for_those_spikes.copy())
+        pop_phases_distribs.append(phases.copy())
+        rayleigh_pvalues[i] = float(rayleightest(np.deg2rad(phases))) if len(phases)>0 else 1
+    return pop_phases_distribs, rayleigh_pvalues
+
+
+def plot_relative_phase_angles_from_spikes(spikes_dict, pops_sublist, ref_pop, dt, t_sim, skip=0, normalize=True, ax=None):
+    if ax is None:
+        ax = plt.gca()
+
+    ref_peaks_t, peak_f = get_ref_signal_peaks(spikes_dict, ref_pop, dt, t_sim, skip)
+    left_peak_series = ref_peaks_t[:-1]
+    right_peak_series = ref_peaks_t[1:]
+    
+    phases_dict = {}
+    rayleigh_pvalues_dict = {}
+    mean_firing_rates = {}
+    for pop in pops_sublist:
+        phases_dict[pop], rayleigh_pvalues_dict[pop] = get_spike_phase_distributions(spikes_dict[pop], left_peak_series, right_peak_series)
+        mean_firing_rates[pop] = np.mean([len(neuron_spikes) for neuron_spikes in spikes_dict[pop]]) / t_sim
+        if pop=="STN":
+            print("number zeroes:", len(np.where(np.array([j for i in phases_dict[pop] for j in i])<1)[0]))
+
+    colors = json.load(open("params/graphical_params.json"))["nuclei"]
+    bin_size = 2    
+    n_bins = int(round(360/bin_size,0))
+    width = (2*np.pi) / n_bins
+    theta = np.linspace(0, 2*np.pi, n_bins, endpoint=False)
+
+    # width = (2*np.pi) / int(round(360/bin_size,0))
+    # theta = np.linspace(0, 2*np.pi, int(round(360/bin_size,0)), endpoint=False)
+
+    for i, (pop, phase_values) in enumerate(phases_dict.items()):
+        
+        idx_rayleigh_pvalues_pass = np.where(rayleigh_pvalues_dict[pop] < 0.05)[0]
+        print(f"{pop}: {len(idx_rayleigh_pvalues_pass)} of {len(phase_values)} passed Rayleigh test")
+        phase_values_rayleigh_pass  = [phase_values[i] for i in idx_rayleigh_pvalues_pass]
+
+        # binned_phases = [np.histogram(x, bins=int(round(360/bin_size,0)), range=(0,360))[0] for x in phase_values_rayleigh_pass]
+        # print(binned_phases)
+        # max_phase_values = np.array([np.argmax(np.histogram(x, bins=int(round(360/bin_size,0)), range=(0,360))[0]) for x in phase_values_rayleigh_pass])
+
+        # print(max_phase_values)
+        bar_data = np.sum([np.histogram(x, bins=n_bins, range=(0,360))[0] for x in phase_values_rayleigh_pass], axis=0)
+        # bar_data = np.histogram(max_phase_values*bin_size, bins=int(round(360/bin_size,0)), range=(0,360))[0]
+
+        if normalize:
+            # ax.bar(theta, bar_data/np.max(bar_data), width=width, color=colors[pop], label=pop)
+            print(mean_firing_rates[pop])
+            ax.bar(theta, bar_data/mean_firing_rates[pop], width=width, color=colors[pop], label=pop)
+        else:
+            ax.bar(theta, bar_data, width=width, color=colors[pop], label=pop)
+
+        
+        mean_phase_values = np.array([np.rad2deg(stat.circmean(np.deg2rad([x]), high = np.pi, low = -np.pi)) for x in phase_values_rayleigh_pass])
+        mean_angle = np.round(np.rad2deg(stat.circmean(np.deg2rad(mean_phase_values), high = np.pi, low = -np.pi)), 1)
+        std_angle = np.round(np.rad2deg(stat.circstd(np.deg2rad(mean_phase_values), high = np.pi, low = -np.pi)), 1)
+        print(f"{pop}: {mean_angle}° ± {std_angle}°")
+        ax.text(1.08, 0.6 - 0.07*i, f"{mean_angle}° ± {std_angle}°", color=colors[pop],
+                transform=ax.transAxes, ha='left', va='top')
+    ax.set_yticks([])
+    ax.set_thetagrids(np.arange(0, 360, 45), labels=['0°', '45°', '90°', '135°', '±180°', '-135°', '-90°', '-45°'])
+    ax.legend(loc="upper left", bbox_to_anchor=(.8 + np.cos(1.15)/2, .6 + np.sin(1.15)/2))
+    ax.set_title(f"{ref_pop} peak f={int(peak_f)} Hz")
 
 def plot_relative_phase_angle_simplified(rates, pops_sublist, ref_pop, dt, window_size=1, skip=0, ax=None):
     """Plot phase angle diagram based on mean population rates: single angle value (arrow) instead of distribution"""
