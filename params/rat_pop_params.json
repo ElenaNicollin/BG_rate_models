@@ -4,8 +4,8 @@
             "id": "Proto",
             "n_real": [46000, 0.7],
             "type": "I",
-            "mean_FR": 21.6,
-            "sd_FR": 12.2,
+            "mean_FR": 39.8,
+            "sd_FR": 13.7,
             "range_FR": [0,80]
             },
         "outgoing_connections": {
@@ -48,11 +48,11 @@
             "id": "STN",
             "n_real": 13560,
             "type": "E",
-            "mean_FR": 24.5,
-            "sd_FR": 11.8,
+            "mean_FR": 7.0,
+            "sd_FR": 5.8,
             "range_FR": [0,30],
             "a": 0,
-            "b": 30,
+            "b": 60,
             "tau_adapt": 50e-3
         },
         "outgoing_connections": {
@@ -76,8 +76,8 @@
             "id": "FSI",
             "n_real": [0.02, 2.79e6],
             "type": "I",
-            "mean_FR": 4.93,
-            "sd_FR": 1.14,
+            "mean_FR": 3.67,
+            "sd_FR": 3.14,
             "range_FR": [0,30]
         },
         "outgoing_connections": {
@@ -120,8 +120,8 @@
             "id": "D2",
             "n_real": [0.475, 2.79e6],
             "type": "I",
-            "mean_FR": 2.8,
-            "sd_FR": 0.47,
+            "mean_FR": 3,
+            "sd_FR": 0.14,
             "range_FR": [0,30]
         },
         "outgoing_connections": {
@@ -139,8 +139,8 @@
             "id": "Arky",
             "n_real": [46000, 0.25],
             "type": "I",
-            "mean_FR": 12.2,
-            "sd_FR": 6,
+            "mean_FR": 14.1,
+            "sd_FR": 8.3,
             "range_FR": [0,30]
         },
         "outgoing_connections": {

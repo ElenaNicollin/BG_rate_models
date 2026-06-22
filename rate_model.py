@@ -21,10 +21,7 @@ class Network:
             self.set_noise(noise_variance[self.id], noise_amplitude, noise_tau)
         self.noise = np.zeros(self.size, dtype=float)
         
-        if extra_stim_dict is None or self.id not in extra_stim_dict.keys():
-            self.extra_stim_values = np.zeros(n_steps)
-        else:
-            self.extra_stim_values = extra_stim_dict[self.id]
+        self.set_extra_stim_values(extra_stim_dict, n_steps)
 
         #self.m_recordings = np.zeros((self.size, n_steps))
         self.m_recordings = {}
@@ -56,6 +53,14 @@ class Network:
         else:
             raise ValueError("Unknown synaptic type for", self.id)
 
+    def set_extra_stim_values(self, extra_stim_dict, n_steps):
+        if extra_stim_dict is None or self.id not in extra_stim_dict.keys():
+            self.extra_stim_values = np.zeros((n_steps, self.size))
+        else:
+            self.extra_stim_values = extra_stim_dict[self.id]
+        if np.shape(self.extra_stim_values) != (n_steps, self.size):
+            raise ValueError(f"Extra stim is shape {np.shape(self.extra_stim_values)}, should be either shape (n_steps) or (n_steps, n_model).")
+
     def add_receiving_from(self, alpha_pop):
         self.list_receiving_from.append(alpha_pop)
 
@@ -63,6 +68,7 @@ class Network:
         self.K_connections[alpha_pop_id] = K_sim
 
     def set_delay_params_distrib(self, dt, alpha_name, mean_delay):
+        # print("DISTRIBUTED DELAYS: std = 10%mean")
         raw_delay = gaussian_trunc_sample(mean_delay, mean_delay/10, 0, 2*mean_delay, self.size)
         #raw_delay = np.full(self.size, mean_delay)
         self.delay[alpha_name] = dt*np.around(raw_delay/dt)   # to match delay precision with dt
@@ -112,7 +118,7 @@ class Network:
             I_syn = np.sum(I_syn_by_alpha, 0)
         self.I_ext = I_ext_tot - I_syn
         if self.noise_mode == "auto":
-            self.set_noise(0.5*np.abs(np.mean(I_ext_tot)), self.noise_amplitude, self.noise_tau)
+            self.set_noise(0.2*np.abs(np.mean(I_ext_tot)), self.noise_amplitude, self.noise_tau)
 
 
     def I_ext_with_noise(self, dt):
@@ -164,6 +170,15 @@ def preprocess(data):
             max_FR = data[pop]["properties"]["mean_FR"] + 2*data[pop]["properties"]["sd_FR"]
             data[pop]["properties"]["range_FR"] = [0, max_FR]
     return data
+
+def process_extra_stim_dict(extra_stim_dict, n_model):
+    for k,v in extra_stim_dict.items():
+        if np.ndim(v)==1:
+            stim_2D = np.full((n_model, len(v)), v.copy())
+            extra_stim_dict[k]= stim_2D.T
+        elif np.ndim(v)>2:
+            raise ValueError("Extra stim has over 2 dimensions")
+    # return extra_stim_dict
 
 def create_pop(id, nb_neurons: int, n_steps, syn_type, mean_FR, sd_FR, range_FR, I_ext_noise_method, noise_variance="auto", extra_stim_dict = None, thresh=0.1, adaptation=False, b_adapt=0, tau_adapt=1):
     # Checking arguments
@@ -301,10 +316,12 @@ def get_loop_G_critical(data, loop_params):
     return func_dict[f"{n}"] (loop_params["x0"], list_taus, sum_delays)
 
 
-def run_rate(params_file, network, t_sim, n_model=1000, dt=1e-4, all_to_all=False, noise_method=None, G_dict=None, extra_stim_dict=dict(), Proto_to_itself=True, noise_variance = "auto", return_all=False, gaussian_delay=False, adaptation=False):
+def run_rate(params_file, network, t_sim, n_model=1000, dt=1e-4, all_to_all=False, noise_method=None, G_dict=None, extra_stim_dict=dict(), Proto_to_itself=True, noise_variance = "auto", return_all=False, gaussian_delay=True, adaptation=False):
 
     input_params = load_params(params_file)
     data = preprocess(input_params)
+    if extra_stim_dict!=None:
+        process_extra_stim_dict(extra_stim_dict, n_model)
 
     n_steps = int(round(t_sim/dt, 0))
 
@@ -325,6 +342,8 @@ def run_rate(params_file, network, t_sim, n_model=1000, dt=1e-4, all_to_all=Fals
 
     # connect populations
     connectivity_params, K_values_sim = calculate_connectivity(network, data, n_model, all_to_all, Proto_to_itself)
+    if gaussian_delay:
+        print("DISTRIBUTED DELAYS")
     connect_all_pops(all_pops, connectivity_params, K_values_sim, dt, gaussian_delay)
     
     # run simulation
