@@ -12,7 +12,7 @@ from rate_analysis import *
 
 parser = argparse.ArgumentParser(
         prog='Fig. 2 - Cortex stim',
-        description='Simulate cortical stimulation and compare latencies to experimetal')
+        description='Simulate cortical stimulation and compare latencies to experimental')
 parser.add_argument('-o', '--outfile', default=None)
 parser.add_argument('-n', '--n_repeats', type=int, required=True)
 parser.add_argument('-c', '--color_mode', choices=["simple", "multiple"], default="simple")
@@ -78,7 +78,7 @@ def get_pop_latencies(rates, stim_starts, dt, bin_size=1e-3, which_stim="Ctx"):
 
 def run_and_get_latencies(stim_starts, params_file, pops, t_sim, n_model, dt, all_to_all, noise, G_dict, stim_dict, noise_variance, pops_subgroup):
 
-    rates = run_rate(params_file, pops, t_sim, n_model, dt, all_to_all, noise, G_dict, stim_dict, noise_variance=noise_variance, return_all=True, gaussian_delay=False)
+    rates = run_rate(params_file, pops, t_sim, n_model, dt, all_to_all, noise, G_dict, stim_dict, noise_variance=noise_variance, return_all=True, gaussian_delay=False, adaptation=False)
 
     latencies = {}
     rates_for_plotting = {}
@@ -158,12 +158,16 @@ elif color_mode == "simple":
     colors = {"Model": "#c28419", "Reference": "#4270a1"}
 
 
-fig, ax = plt.subplots(2,2, sharex='row')
+fig, ax = plt.subplots(2,2, sharex='row') #Fig A & B
 fig.set_figwidth(12)
 fig.set_figheight(7)
 
-fig2, ax2 = plt.subplots(1,2, squeeze=True)
+fig2, ax2 = plt.subplots(1,2, squeeze=True) #Supp Fig -> Table with latencies
 fig2.set_figwidth(11)
+
+fig3, ax3 = plt.subplots(1,4, squeeze=True, sharex=True, sharey=True) #Fig C
+fig3.set_figwidth(12)
+fig3.set_figheight(2)
 
 
 for col, species in enumerate(["rat", "monkey"]):
@@ -186,7 +190,7 @@ for col, species in enumerate(["rat", "monkey"]):
     G_dict = {k:v for k,v in G_default.items()}
     if species=="monkey":
         for g in ["G_Proto_to_Arky", "G_Proto_to_FSI", "G_FSI_to_D2", "G_Arky_to_D2", "G_Proto_to_Proto"]:
-            G_dict[g] = 0.8
+            G_dict[g] = 0.8     #Avoid spontaneous oscillations from striatopallidal loops
     
 
     rates_to_plot = {k:np.zeros(n_steps) for k in pops}
@@ -221,7 +225,9 @@ for col, species in enumerate(["rat", "monkey"]):
 
     plot_rate(mean_rates, 0.1+pre_rate_t, dt, zero_time=pre_rate_t, ax=ax[0,col])
     ax[0,col].set_xlim(-pre_rate_t,0.1)
+    ax[0,col].set_xlabel("Time from cortex stimulation (ms)")
     ax[0,col].set_ylim(0,120)
+    ax[0,col].set_ylabel("Population activity (spk/s)")
     ax[0,col].set_title(species.upper(), fontsize=20)
     ax[0,col].spines[['right', 'top']].set_visible(False)
     
@@ -252,6 +258,54 @@ for col, species in enumerate(["rat", "monkey"]):
                 colLabels=[k for k in formatted_latencies.keys()],
                 rowLabels=["Early Exc.", "Short Inh.", "Late Exc."],
                 loc='center').auto_set_column_width(col=list(range(len(yticks))))
+
+
+    #### Fig C
+    ## Inhib STN
+    for i in range(2):
+        ax3[2*col+i].plot(np.arange(0, (0.1+pre_rate_t), dt)-pre_rate_t, mean_rates["GPi"], color="k", ls="-", alpha=0.4)
+
+    n_repeats = args.n_repeats
+    stim_interval=1 if species=="rat" else 1.5
+    stim_starts = np.linspace(stim_interval, n_repeats*stim_interval, n_repeats)
+    stim_duration = 3e-4
+    
+    t_sim = round(stim_starts[-1]+0.1, 4)
+    n_steps = int(round(t_sim/dt, 0))
+    
+    stims_with_pharmaco = {
+        "STN blockade": {"Ctx": np.zeros(n_steps), "STN": np.full((n_steps, n_model), -1000)},
+        "GPe blockade": {"Ctx": np.zeros(n_steps), "Proto": np.zeros((n_steps, n_model)), "Arky": np.zeros((n_steps, n_model))}
+    }
+    for stim_dict in stims_with_pharmaco.values():
+        for stim_t in stim_starts:
+            stim_dict["Ctx"][int(round((stim_t)/dt, 0)) : int(round((stim_t+stim_duration)/dt, 0))] = 1800
+    prop_GPe_blocked = 0.7
+    stims_with_pharmaco["GPe blockade"]["Proto"][:, :int(n_model*prop_GPe_blocked)] = -1000
+
+
+    G_dict = {k:v for k,v in G_default.items()}
+
+
+
+    for i, (title, stim_dict) in enumerate(stims_with_pharmaco.items()):
+        mean_rates, _ = run_rate(params_file, pops, t_sim, n_model, dt, all_to_all, noise_method, G_dict, stim_dict, noise_variance=noise_variance, return_all=False, gaussian_delay=True, adaptation=False)
+        
+        rate_to_plot = {"GPi": np.zeros(int(round(0.12/dt, 0))), "Proto": np.zeros(int(round(0.12/dt, 0)))}
+        for stim_t in stim_starts:
+            rate_to_plot["GPi"] += mean_rates["GPi"][int(round((stim_t-0.02)/dt, 0)) : int(round((stim_t+0.1)/dt, 0))]
+            rate_to_plot["Proto"] += mean_rates["Proto"][int(round((stim_t-0.02)/dt, 0)) : int(round((stim_t+0.1)/dt, 0))]
+        rate_to_plot["GPi"] /= len(stim_starts)
+        rate_to_plot["Proto"] /= len(stim_starts)
+        
+
+        axi = 2*col+i
+        ax3[axi].plot(np.arange(0, (0.1+pre_rate_t), 1e-3)-pre_rate_t, rate_to_psth(rate_to_plot["GPi"], dt, 1e-3), color="k", ls="-")
+        # ax3[axi].plot(np.arange(0, (0.1+pre_rate_t), dt)-pre_rate_t, rate_to_plot["Proto"], color="#1F77B4", ls="-")
+        ax3[axi].set_title(title)
+        ax3[axi].spines[['right', 'top']].set_visible(False)
+    ax3[0].set_xlabel("Time from cortex stimulation (s)")
+    ax3[0].set_ylabel("GPi activity (spk/s)")
 
 
 ### legend handling

@@ -102,7 +102,7 @@ with PdfPages(f"outputs/rate/{args.outfile}.pdf") as pdf:
             rates = simulate_network(all_pops, t_sim, dt, return_all=True)
             pops_sublist = ["Proto", "Arky", "STN", "D2", "Ctx"]
 
-            plot_rate(rates, t_sim, dt, skip, xaxis_len = 0.25, ax=ax[0])
+            plot_rate({k: v[0] for k,v in rates.items()}, t_sim, dt, skip, xaxis_len = 0.25, ax=ax[0])
             plot_mean_coherences(rates, pops_sublist, "Proto", dt, window_size=1, ax=ax[1])
             ax[1].set_xlim(0,60)
             plot_relative_phase_angles(rates, pops_sublist, "Proto", dt, skip=skip, loop_name=loop_name, normalize=False, n_pairs=2000, ax=ax[2])
