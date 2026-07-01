@@ -135,6 +135,12 @@
             "sd_FR": 1.04
         },
         "outgoing_connections": {
+            "D1": {
+                "k_sim": 10,
+                "mean_W": -1,
+                "mean_delay": 10e-3,
+                "mean_tau_decay": 5e-3
+            },
             "D2": {
                 "k_sim": 10,
                 "mean_W": -1,

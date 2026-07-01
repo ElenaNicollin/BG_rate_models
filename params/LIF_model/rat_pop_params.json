@@ -282,6 +282,19 @@
             "range_tau": [2e-3, 100e-3]
         },
         "outgoing_connections": {
+            "D1": {
+                "k_sim": 10,
+                "mean_W": -0.268e-3,
+                "mean_tau_rise": 1e-3,
+                "sd_tau_rise": 0.5e-3,
+                "range_tau_rise": [0.1e-3, 3e-3],
+                "mean_tau_decay": 28e-3,
+                "sd_tau_decay": 5e-3,
+                "range_tau_decay": [0.5e-3, 35e-3],
+                "mean_delay": 4.9e-3,
+                "sd_delay": 0.6e-3,
+                "range_delay": [3.8e-3, 7e-3]
+            },
             "D2": {
                 "k_sim": 10,
                 "mean_W": -0.268e-3,
