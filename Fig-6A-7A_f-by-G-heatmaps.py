@@ -10,7 +10,7 @@ from rate_analysis import *
 from utils import *
 
 parser = argparse.ArgumentParser(
-        prog='Fig. 5A-6A: Heatmap',
+        prog='Fig. 6A-7A: Heatmap',
         description='Run simulations, extract peak frequency, plot heatmap')
 parser.add_argument('-o', '--outfile', required=True)
 parser.add_argument('-s', '--species', required=True, choices=["rat", "monkey"])

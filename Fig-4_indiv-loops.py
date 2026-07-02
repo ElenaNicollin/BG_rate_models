@@ -22,10 +22,10 @@ species_list = ["rat", "monkey"]
 
 full_network = ["Th", "Ctx", "FSI", "D1", "D2", "STN", "Proto", "Arky", "GPi"]
 G_default = dict(G_Proto_to_STN=-0.2, G_STN_to_Proto=0.2, G_Proto_to_Proto=-0.2,
-                G_Proto_to_Arky=-0.2, G_Arky_to_D2=-0.2, G_D2_to_Proto=-0.2,
-                G_Proto_to_FSI=-0.2, G_FSI_to_D1=-0.2, G_FSI_to_D2=-0.2,
-                G_Ctx_to_STN=0.2, G_Ctx_to_FSI=0.2, G_Ctx_to_D1=0.2, G_Ctx_to_D2=0.2,
-                G_STN_to_GPi=0.2, G_D1_to_GPi=-0.2, G_Proto_to_GPi=-0.2,
+                G_Proto_to_Arky=-0.2, G_Arky_to_D2=-0.2, G_Arky_to_D1=-1, G_D2_to_Proto=-0.2,
+                G_Proto_to_FSI=-0.2, G_FSI_to_D1=-1, G_FSI_to_D2=-0.2,
+                G_Ctx_to_STN=0.2, G_Ctx_to_FSI=1, G_Ctx_to_D1=1, G_Ctx_to_D2=1,
+                G_STN_to_GPi=0.2, G_D1_to_GPi=-1, G_Proto_to_GPi=-1,
                 G_GPi_to_Th=-0.2, G_Th_to_Ctx=0.2)
 
 n_model = 1000

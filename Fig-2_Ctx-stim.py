@@ -106,7 +106,7 @@ noise_method = "Ornstein-Uhlenbeck" #can be None, "Gaussian", or "Ornstein-Uhlen
 noise_variance = "auto"
 
 G_default = dict(G_Proto_to_STN=-1, G_STN_to_Proto=1, G_Proto_to_Proto=-1,
-                 G_Proto_to_Arky=-1, G_Arky_to_D2=-1, G_D2_to_Proto=-1,
+                 G_Proto_to_Arky=-1, G_Arky_to_D2=-1, G_Arky_to_D1=-1, G_D2_to_Proto=-1,
                  G_Proto_to_FSI=-1, G_FSI_to_D1=-1, G_FSI_to_D2=-1,
                  G_Ctx_to_STN=1, G_Ctx_to_FSI=1, G_Ctx_to_D1=1, G_Ctx_to_D2=1,
                  G_STN_to_GPi=1, G_D1_to_GPi=-1, G_Proto_to_GPi=-1,

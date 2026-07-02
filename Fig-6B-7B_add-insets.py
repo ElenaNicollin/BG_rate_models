@@ -13,9 +13,9 @@ from utils import *
 
 
 parser = argparse.ArgumentParser(
-        prog='Heatmap',
+        prog='Fig. 6B-7B: Heatmap and insets',
         description='Plot frequency heatmap and subfigures')
-parser.add_argument('-i', '--infile', default=None)
+parser.add_argument('-i', '--infile', default=None)     #output npy file from running Fig-6A-7A first
 parser.add_argument('-o', '--outfile', required=True)
 parser.add_argument('-s', '--species', required=True, choices=["rat", "monkey"])
 args = parser.parse_args()
@@ -93,12 +93,12 @@ noise_method = None #can be None, "Gaussian", or "Ornstein-Uhlenbeck"
 noise_variance = "auto"
 
 
-G_default = dict(G_Proto_to_STN=1, G_STN_to_Proto=0, G_Proto_to_Proto=2,
-                 G_Proto_to_Arky=1, G_Arky_to_D2=1, G_D2_to_Proto=5,
+G_default = dict(G_Proto_to_STN=1, G_STN_to_Proto=1, G_Proto_to_Proto=1,
+                 G_Proto_to_Arky=1, G_Arky_to_D2=1, G_Arky_to_D1=1, G_D2_to_Proto=1,
                  G_Proto_to_FSI=1, G_FSI_to_D1=1, G_FSI_to_D2=1,
                  G_Ctx_to_STN=1, G_Ctx_to_FSI=1, G_Ctx_to_D1=1, G_Ctx_to_D2=1,
                  G_STN_to_GPi=1, G_D1_to_GPi=1, G_Proto_to_GPi=1,
-                 G_GPi_to_Th=1.5, G_Th_to_Ctx=1)
+                 G_GPi_to_Th=1, G_Th_to_Ctx=1)
 
 
 draw_heatmap = args.infile!=None
