@@ -1,6 +1,7 @@
 import numpy as np
+from scipy.signal import sosfiltfilt, butter
 from scipy.stats import truncnorm, norm
-from scipy.optimize import fsolve
+from scipy.optimize import fsolve, curve_fit
 # from sympy import sin, cos, tan, cot
 from itertools import combinations
 
@@ -39,6 +40,16 @@ def linear_interpolation(x, x1, x2, y1, y2):
     y = y1 + (x-x1)*(y2-y1)/(x2-x1)
     return y
 
+def sigmoid_FI(I, L, k, I_0):
+    return L / (1 + np.exp(-k * (I - I_0)))
+
+def sigmoid_interpolation(target_FR, I_ext_data, FR_data):
+    p0 = [max(FR_data), 1.0, np.mean(I_ext_data)]
+    popt, _ = curve_fit(sigmoid_FI, I_ext_data, FR_data, p0=p0, maxfev=5000)
+    L, k, I_0 = popt
+    return I_0 + (1/k) * np.log(target_FR / (L - target_FR))
+
+
 def Hansel_linear_interpolation(dt, v, next_v, v_rest, v_th, tau):
     v_reset = (next_v - v_th) * (1 + dt/tau * (v - v_rest)/(next_v - v)) + v_rest
     return v_reset
@@ -63,6 +74,10 @@ def _Ornstein_Uhlenbeck_noise(amplitude, std, n, dt, sqrt_dt, tau= 0.01,  noise_
     noise = fwd_Euler(dt, noise_dt_before, noise_prime)
     #return np.zeros_like(noise)
     return noise
+
+def bandpass_filter(signal, fs, low, high, order=6):
+    sos = butter(order, [low, high], btype="bandpass", fs=fs, output="sos")
+    return sosfiltfilt(sos, signal)
 
 
 def solve_beta_1_nuclei(x, tau, delay):
