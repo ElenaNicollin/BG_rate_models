@@ -10,11 +10,13 @@ from utils import *
 # Classes
 
 class Network:
-    def __init__(self, id, nb_neurons, n_steps, state, mean_v_rest, sd_v_rest, range_v_rest, mean_v_th, sd_v_th, mean_tau, sd_tau, range_tau,
+    def __init__(self, id, nb_neurons, n_steps, syn_type, state, mean_v_rest, sd_v_rest, range_v_rest, mean_v_th, sd_v_th, mean_tau, sd_tau, range_tau,
                  mean_FR, sd_FR, range_FR, nonlinearity_thresh, I_ext_noise_method, noise_variance,
                  noise_amplitude = 1, noise_tau = 0.01, refractory_period = 0.002, extra_stim_dict = dict(), a_adapt = 0, b_adapt = 0, tau_adapt = 0):
         self.id = id                                            # population name
         self.size = nb_neurons                                  # number of neurons
+        self.syn_type = syn_type
+        self.set_syn_sign()
         self.state = state
 
         # Constants
@@ -71,6 +73,14 @@ class Network:
         self.w = np.zeros(self.size, dtype=float)
 
 
+    def set_syn_sign(self):
+        if self.syn_type == 1 or self.syn_type.casefold() in ["e".casefold(), "exc".casefold(), "excitation".casefold(), "excitatory".casefold()]:
+            self.syn_sign = 1
+        elif self.syn_type == -1 or self.syn_type.casefold() in ["i".casefold(), "inh".casefold(), "inhibition".casefold(), "inhibitory".casefold()]:
+            self.syn_sign = -1
+        else:
+            raise ValueError("Unknown synaptic type for", self.id)
+
     def set_noise(self, noise_variance, noise_amplitude = 1):
         self.noise_variance = noise_variance
         self.noise_std = np.sqrt(noise_variance)
@@ -101,7 +111,7 @@ class Network:
     def set_I_rise(self, alpha_pop_id):
         self.I_rise[alpha_pop_id] = np.zeros(self.size)
     
-    def set_connectivity_matrix(self, dt, alpha_pop_id, n_alpha_neurons, alpha_FR, mean_W, sd_G, same_pop = False):
+    def set_connectivity_matrix(self, dt, alpha_pop_id, alpha_syn_sign, n_alpha_neurons, alpha_FR, mean_W, sd_G, same_pop = False):
         random_prob_matrix = np.random.rand(n_alpha_neurons, self.size)
         if same_pop:
             np.fill_diagonal(random_prob_matrix, 0)    #avoid autapses when connecting pop to itself by setting prob to 0
@@ -122,7 +132,7 @@ class Network:
         if mean_W==0:
             G_matrix = np.zeros((n_alpha_neurons, self.size))
         else:
-            mean_G = np.mean(mean_W * (self.v_th - self.v_rest) / (1+mean_W*self.b*self.tau_adapt) / (K_sim*dt)) #this is if mean_W is a "ratio" weight (like in the rate model)
+            mean_G = alpha_syn_sign * np.abs(np.mean(mean_W * (self.v_th - self.v_rest) / (1+mean_W*self.b*self.tau_adapt) / (K_sim*dt))) #this is if mean_W is a "ratio" weight (like in the rate model)
             # mean_G = mean_W / dt        # this is if mean_W is already in Volt
             reverse_W = np.mean(mean_G*K_sim*dt/(self.v_th - self.v_rest))
             print(f"meanG {alpha_pop_id} to {self.id} = {mean_G} = {np.round(reverse_W,2)}")
@@ -284,14 +294,14 @@ def edit_W_values(W_dict: dict, data: dict):
         data[pre]["outgoing_connections"][post]["mean_W"] = v
     return data
 
-def create_pop(id, nb_neurons: int, n_steps, state, mean_v_rest, sd_v_rest, range_v_rest, mean_v_th, sd_v_th, mean_tau, sd_tau, range_tau, mean_FR, sd_FR, range_FR, nonlinearity_thresh, I_ext_noise_method, noise_variance, extra_stim_dict, a_adapt, b_adapt, tau_adapt):
+def create_pop(id, nb_neurons: int, n_steps, syn_type, state, mean_v_rest, sd_v_rest, range_v_rest, mean_v_th, sd_v_th, mean_tau, sd_tau, range_tau, mean_FR, sd_FR, range_FR, nonlinearity_thresh, I_ext_noise_method, noise_variance, extra_stim_dict, a_adapt, b_adapt, tau_adapt):
     # Checking arguments
     if not type(nb_neurons) is int:
         raise TypeError("nb_neurons: Number of neurons must be int, got %s instead" % (type(nb_neurons)))
     if nb_neurons<0:
         raise ValueError("nb_neurons: Number of neurons must be positive, got %s instead" % (nb_neurons))
     
-    network = Network(id, nb_neurons, n_steps, state, mean_v_rest, sd_v_rest, range_v_rest, mean_v_th, sd_v_th, mean_tau, sd_tau, range_tau, mean_FR, sd_FR, range_FR, nonlinearity_thresh, I_ext_noise_method, noise_variance, extra_stim_dict=extra_stim_dict, a_adapt=a_adapt, b_adapt=b_adapt, tau_adapt=tau_adapt)
+    network = Network(id, nb_neurons, n_steps, syn_type, state, mean_v_rest, sd_v_rest, range_v_rest, mean_v_th, sd_v_th, mean_tau, sd_tau, range_tau, mean_FR, sd_FR, range_FR, nonlinearity_thresh, I_ext_noise_method, noise_variance, extra_stim_dict=extra_stim_dict, a_adapt=a_adapt, b_adapt=b_adapt, tau_adapt=tau_adapt)
 
     return network
     
@@ -370,7 +380,7 @@ def connect_two_pops(alpha, beta, K_sim, params, same_pop, dt):
     beta.set_delay_params(alpha_name, params['mean_delay'], params['sd_delay'], params['range_delay'], dt)
     beta.set_I_syn(alpha_name)
     beta.set_I_rise(alpha_name)
-    beta.set_connectivity_matrix(dt, alpha_name, alpha.size, alpha.mean_FR, params['mean_W'], same_pop)
+    beta.set_connectivity_matrix(dt, alpha_name, alpha.syn_sign, alpha.size, alpha.mean_FR, params['mean_W'], same_pop)
 
 
 def simulate_network(all_pops, t_sim, dt=0.001):
@@ -492,7 +502,7 @@ def run_LIF(params_file, species, populations_list, t_sim, n_model=1000, dt=1e-4
     # create populations
     for pop in network:
         properties = data[pop]["properties"]
-        all_pops.append(create_pop(id=properties["id"], nb_neurons=n_model, n_steps=n_steps, state=state,
+        all_pops.append(create_pop(id=properties["id"], nb_neurons=n_model, n_steps=n_steps, syn_type=properties["type"], state=state,
                                    mean_v_rest=properties["mean_v_rest"], sd_v_rest=properties["sd_v_rest"], range_v_rest=properties["range_v_rest"],
                                    mean_v_th=properties["mean_v_th"], sd_v_th=properties["sd_v_th"],
                                    mean_tau=properties["mean_tau"], sd_tau=properties["sd_tau"], range_tau=properties["range_tau"],
