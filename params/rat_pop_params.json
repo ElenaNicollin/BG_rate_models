@@ -74,7 +74,7 @@
     "FSI": {
         "properties": {
             "id": "FSI",
-            "n_real": [0.02, 2.79e6],
+            "n_real": [0.04, 2.79e6],
             "type": "I",
             "mean_FR": 3.67,
             "sd_FR": 3.14,
