@@ -34,7 +34,7 @@
                 "range_delay": [0.8e-3,2.5e-3]
             },
             "FSI": {
-                "k_real": 67,
+                "k_real": 33.5,
                 "mean_W": -0.709e-3,
                 "mean_tau_rise": 1.1e-3,
                 "sd_tau_rise": 0.4e-3,
@@ -47,7 +47,7 @@
                 "range_delay": [3.2e-3, 7e-3]
             },
             "Arky": {
-                "k_real": 104,
+                "k_real": 98.5,
                 "mean_W": -0.112e-3,
                 "mean_tau_rise": 0.5e-3,
                 "sd_tau_rise": 0.15e-3,
@@ -60,7 +60,7 @@
                 "range_delay": [2.55e-3, 7.05e-3]
             },
             "Proto": {
-                "k_real": 104,
+                "k_real": 98.5,
                 "mean_W": -0.032e-3,
                 "mean_tau_rise": 0.5e-3,
                 "sd_tau_rise": 0.15e-3,
@@ -146,7 +146,7 @@
     "FSI": {
         "properties": {
             "id": "FSI",
-            "n_real": [0.02, 2.79e6],
+            "n_real": [0.04, 2.79e6],
             "type": "I",
             "mean_FR_Ctrl": 3.67,
             "sd_FR_Ctrl": 3.22,
@@ -165,7 +165,7 @@
         },
         "outgoing_connections": {
             "D1": {
-                "k_real": 51,
+                "k_real": 85.2,
                 "mean_W": -0.737e-3,
                 "mean_tau_rise": 1.5e-3,
                 "sd_tau_rise": 2.9e-3,
@@ -178,7 +178,7 @@
                 "range_delay": [0.6e-3, 2e-3]
             },
             "D2": {
-                "k_real": 51,
+                "k_real": 55.4,
                 "mean_W": -0.737e-3,
                 "mean_tau_rise": 1.5e-3,
                 "sd_tau_rise": 2.9e-3,
@@ -289,7 +289,7 @@
         },
         "outgoing_connections": {
             "D1": {
-                "k_sim": 10,
+                "k_real": 28.9,
                 "mean_W": -0.268e-3,
                 "mean_tau_rise": 1e-3,
                 "sd_tau_rise": 0.5e-3,
@@ -302,7 +302,7 @@
                 "range_delay": [3.8e-3, 7e-3]
             },
             "D2": {
-                "k_sim": 10,
+                "k_real": 28.9,
                 "mean_W": -0.268e-3,
                 "mean_tau_rise": 1e-3,
                 "sd_tau_rise": 0.5e-3,
@@ -320,6 +320,7 @@
     "Ctx": {
         "properties": {
             "id": "Ctx",
+            "n_real": 1.7e7,
             "type": "E",
             "mean_FR_Ctrl": 2.8,
             "sd_FR_Ctrl": 0.59,
@@ -338,7 +339,7 @@
         },
         "outgoing_connections": {
             "STN": {
-                "k_sim": 92,
+                "k_real": 55,
                 "mean_W": 0.5e-3,
                 "mean_tau_rise": 0.75e-3,
                 "sd_tau_rise": 0.41e-3,

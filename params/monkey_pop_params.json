@@ -2,38 +2,38 @@
     "Proto": {
         "properties": {
             "id": "Proto",
-            "n_real": [46000, 0.7],
+            "n_real": [502000, 0.87],
             "type": "I",
             "mean_FR": 65.1,
             "sd_FR": 34.1
             },
         "outgoing_connections": {
             "STN": {
-                "k_real": 442,
+                "k_sim": 309,
                 "mean_W": -1,
                 "mean_delay": 2.0e-3,
                 "mean_tau_decay": 5e-3
             },
             "FSI": {
-                "k_real": 67,
+                "k_sim": 32,
                 "mean_W": -1,
                 "mean_delay": 10e-3,
                 "mean_tau_decay": 5e-3
             },
             "Arky": {
-                "k_real": 104,
+                "k_sim": 94,
                 "mean_W": -1,
                 "mean_delay": 5e-3,
                 "mean_tau_decay": 5e-3
             },
             "Proto": {
-                "k_real": 104,
+                "k_sim": 94,
                 "mean_W": -1,
                 "mean_delay": 5e-3,
                 "mean_tau_decay": 5e-3
             },
             "GPi": {
-                "k_real":100,
+                "k_sim":234,
                 "mean_W":-1,
                 "mean_delay":4.6e-3,
                 "mean_tau_decay":5e-3
@@ -69,20 +69,20 @@
     "FSI":{
         "properties": {
             "id": "FSI",
-            "n_real":[0.02, 2.79e6],
+            "n_real":[0.05, 30.4e6],
             "type": "I",
             "mean_FR": 6.21,
             "sd_FR": 3.96
         },
         "outgoing_connections": {
             "D1": {
-                "k_real": 51,
+                "k_sim": 79,
                 "mean_W": -1,
                 "mean_delay": 2e-3,
                 "mean_tau_decay": 5e-3
             },
             "D2": {
-                "k_real": 51,
+                "k_sim": 53,
                 "mean_W": -1,
                 "mean_delay": 2e-3,
                 "mean_tau_decay": 5e-3
@@ -129,20 +129,20 @@
     "Arky":{
         "properties": {
             "id": "Arky",
-            "n_real":[46000, 0.25],
+            "n_real":[502000, 0.13],
             "type": "I",
             "mean_FR": 14.21,
             "sd_FR": 1.04
         },
         "outgoing_connections": {
             "D1": {
-                "k_sim": 10,
+                "k_sim": 28,
                 "mean_W": -1,
                 "mean_delay": 10e-3,
                 "mean_tau_decay": 5e-3
             },
             "D2": {
-                "k_sim": 10,
+                "k_sim": 28,
                 "mean_W": -1,
                 "mean_delay": 10e-3,
                 "mean_tau_decay": 5e-3
@@ -192,8 +192,8 @@
             "id":"GPi",
             "n_real": 150000,
             "type": "I",
-            "mean_FR":58.5,
-            "sd_FR": 16.8,
+            "mean_FR": 67,
+            "sd_FR": 32,
             "threshold":1.35
         },
         "outgoing_connections": {
@@ -210,8 +210,8 @@
         "properties": {
             "id":"Th",
             "type": "E",
-            "mean_FR":18,
-            "sd_FR":12,
+            "mean_FR":18.2,
+            "sd_FR":10,
             "threshold":-0.185
         },
         "outgoing_connections": {
