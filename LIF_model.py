@@ -83,7 +83,7 @@ class Network:
 
     def set_noise(self, noise_variance, noise_amplitude = 1):
         self.noise_variance = noise_variance
-        self.noise_std = np.sqrt(noise_variance)
+        self.noise_std = np.sqrt(self.noise_variance) if type(noise_variance) != str else 0
         self.noise_amplitude = noise_amplitude
 
     def add_receiving_from(self, alpha_pop):
@@ -150,12 +150,8 @@ class Network:
             print(np.mean(I_syn))
         if self.mean_FR < self.nonlinearity_thresh:
             if self.I_ext_noise_method == "Ornstein-Uhlenbeck":
-                if self.id == "STN":
-                    with open(f"/home/elena/Documents/data/FI_data/test_noisy5_{self.id}.json", 'r') as f:
-                        FI_data = json.load(f)
-                else:
-                    with open(f"/home/elena/Documents/data/FI_data/FI_data_noisy_{self.state}_{self.id}.json", 'r') as f:
-                        FI_data = json.load(f)
+                with open(f"/home/elena/Documents/data/FI_data/FI_data_noisy_{self.state}_{self.id}.json", 'r') as f:
+                    FI_data = json.load(f)
             else:
                 print("calculate I_ext no noise")
                 with open(f"/home/elena/Documents/data/FI_data/FI_data_{self.id}.json", 'r') as f:
@@ -166,6 +162,12 @@ class Network:
             I_ext_tot = self.calculate_I_ext_high()
         I_ext = I_ext_tot - I_syn
         print(self.id, ":", np.mean(I_ext), "for", self.mean_FR)
+
+        if self.noise_variance == "auto":
+            noise_var = np.round(np.mean(I_ext_tot)/1000, 7)
+            print("I_ext_tot =", np.round(np.mean(I_ext_tot), 4), "so noise variance =", noise_var)
+            self.set_noise(float(noise_var))
+
         return I_ext
 
     #########################################################
@@ -276,13 +278,10 @@ def load_params(params_file):
         f = open(params_file)
         return json.load(f)
 
-def preprocess(data, species, rate=False):
+def preprocess(data):
     for pop in data.keys():
         if "threshold" not in data[pop]["properties"].keys():
             data[pop]["properties"]["threshold"] = 0.1
-    if rate and species=="rat":
-        data["STN"]["outgoing_connections"]["Proto"]["mean_tau_decay"] = 6e-3
-        print("rate?")
     return data
 
 def edit_W_values(W_dict: dict, data: dict):
@@ -420,6 +419,22 @@ def reset(all_pops, n_steps):
             pop.I_syn[k] = np.zeros(pop.size)
             pop.I_rise[k] = np.zeros(pop.size)
 
+def reconnect(all_pops, connectivity_params, dt, I_ext=None):
+    for alpha in all_pops:
+        alpha_name = alpha.id
+        if alpha_name in connectivity_params.keys():
+            for beta in all_pops:
+                beta_name = beta.id
+                if beta_name in connectivity_params[alpha_name].keys():
+                    same_pop = True if alpha_name == beta_name else False
+                    beta.set_connectivity_matrix(dt, alpha_name, alpha.syn_sign, alpha.size, alpha.mean_FR, connectivity_params[alpha_name][beta_name]['mean_W'], same_pop)
+
+    if I_ext==None:
+        for pop in all_pops:
+            pop.I_ext = pop.calculate_I_ext_mean(dt)
+    else:
+        for pop in all_pops:
+            pop.I_ext = I_ext[pop.id]
 
 def spike_list_to_binary_signal(spike_list, n_steps):
     signal = np.zeros(n_steps)
@@ -481,9 +496,9 @@ def spikes_to_smoothed_mean_rate(spikes: dict, n_steps, dt, rolling_window = 0.0
     return mean_rates, std
 
 
-def run_LIF(params_file, species, populations_list, t_sim, n_model=1000, dt=1e-4, state="Ctrl", all_to_all=False, noise=None, W_dict=None, extra_stim_dict=dict(), I_ext=None, Proto_to_itself=True, noise_variance = {"Proto": 12, "STN": 7, "D1": 20, "D2": 19, "Arky": 15, "FSI": 24, "Ctx": 2, "GPi": 13, "Th": 17}):
+def run_LIF(params_file, populations_list, t_sim, n_model=1000, dt=1e-4, state="Ctrl", all_to_all=False, noise=None, W_dict=None, extra_stim_dict=dict(), I_ext=None, Proto_to_itself=True, noise_variance="auto"):
     input_params = load_params(params_file)
-    data = preprocess(input_params, species, rate=False)
+    data = preprocess(input_params)
 
     n_steps = int(round(t_sim/dt, 0))
 
@@ -498,6 +513,8 @@ def run_LIF(params_file, species, populations_list, t_sim, n_model=1000, dt=1e-4
     if W_dict != None:
         data = edit_W_values(W_dict, data)
 
+    if noise_variance == "auto":
+        noise_variance = {pop: "auto" for pop in network}
 
     # create populations
     for pop in network:

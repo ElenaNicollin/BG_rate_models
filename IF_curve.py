@@ -17,15 +17,14 @@ reps = 3
 
 n_model=1000
 pops = ["Proto", "STN", "D1", "D2", "FSI", "Arky", "Ctx", "GPi", "Th"]
-species = "rat"
-params_file = f"/home/elena/Documents/code/params/LIF_model/{species}_pop_params.json"
+params_file = f"params/LIF_model/rat_pop_params.json"
 skip = 0.1
 t_sim = 2+skip
 dt=1e-4
 n_steps=int(round(t_sim/dt,0))
 
 input_params = load_params(params_file)
-data = preprocess(input_params, species, rate=False)
+data = preprocess(input_params)
 
 
 ###########################################
