@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import os
 import argparse
 
 from utils import *
@@ -46,7 +47,8 @@ pops_sublist = ["Ctx", "STN", "Proto", "Arky", "D2"] #for phase angles
 loops = ["steady", "STN loop", "FSI loop", "Arky loop", "hyperdirect loop"]
 
 
-with PdfPages(f"outputs/rate/{args.outfile}.pdf") as pdf:
+os.makedirs("outputs/LIF", exist_ok=True)
+with PdfPages(f"outputs/LIF/{args.outfile}.pdf") as pdf:
 
 
     params_file = "params/LIF_model/rat_pop_params.json"
