@@ -172,26 +172,20 @@ class Network:
 
     #########################################################
 
-    def calculate_I_ext_low(self, FI_data):
+    def calculate_I_ext_low(self, FI_data, method="sigmoid"):
         I_ext_list = FI_data["I_ext"]
         FR_list = FI_data[self.id]
-        idx = [np.where(np.subtract(FR_list, basal_FR)>0)[0][0] for basal_FR in self.basal_firing]
-        FR_upper_bound, FR_lower_bound = np.array([FR_list[i] for i in idx]), np.array([FR_list[i-1] for i in idx])
-        I_ext_upper_bound, I_ext_lower_bound = np.array([I_ext_list[i] for i in idx]), np.array([I_ext_list[i-1] for i in idx])
-        
-        # linear_interp = interp1d(I_ext_list, FR_list)
-        # linear_results = linear_interp(interpolation_time)
 
-        # cubic_interp = interp1d(time_points, datapoints, kind='cubic')
-        # cubic_results = cubic_interp(interpolation_time)
+        if method=="linear":
+            idx = [np.where(np.subtract(FR_list, basal_FR)>0)[0][0] for basal_FR in self.basal_firing]
+            FR_upper_bound, FR_lower_bound = np.array([FR_list[i] for i in idx]), np.array([FR_list[i-1] for i in idx])
+            I_ext_upper_bound, I_ext_lower_bound = np.array([I_ext_list[i] for i in idx]), np.array([I_ext_list[i-1] for i in idx])
+            I_ext = linear_interpolation(self.basal_firing, FR_lower_bound, FR_upper_bound, I_ext_lower_bound, I_ext_upper_bound)
 
-
-
-        # plot = sns.scatterplot(x=time_points, y=datapoints, label="Data points", color="green")
-        # plot = sns.lineplot(x=interpolation_time, y=cubic_results, label = "Cubic interpolation")
-        # plot = sns.lineplot(x=interpolation_time, y=linear_results, label = "Linear interpolation", color="darkorange")
-        
-        I_ext = linear_interpolation(self.basal_firing, FR_lower_bound, FR_upper_bound, I_ext_lower_bound, I_ext_upper_bound)
+        elif method=="sigmoid":
+            I_ext = sigmoid_interpolation(self.basal_firing, np.array(I_ext_list), np.array(FR_list))
+        else:
+            raise ValueError("Method must be linear or sigmoid")
         if np.mean(I_ext) > 1: I_ext /= 1000  #in case I_ext is in mV, convert to V
         return I_ext
 
