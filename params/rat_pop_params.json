@@ -120,7 +120,7 @@
             "id": "D2",
             "n_real": [0.475, 2.79e6],
             "type": "I",
-            "mean_FR": 3,
+            "mean_FR": 0.49,
             "sd_FR": 0.14,
             "range_FR": [0,30]
         },
