@@ -378,7 +378,8 @@ def plot_relative_phase_angles(rates, pops_sublist, ref_pop, dt, window_size=1, 
         print("mean angle:",np.mean(angle_distrib))
         print("n nonzero:", len(np.where(bar_data!=0)[0]))
         if normalize:
-            ax.bar(theta, bar_data/np.max(bar_data), width=width, color=colors[pop], label=pop)
+            # ax.bar(theta, bar_data/np.max(bar_data), width=width, color=colors[pop], label=pop)
+            ax.bar(theta, np.log(np.clip(bar_data, 1, None)), width=width, color=colors[pop], label=pop, alpha=0.8)
         else:
             ax.bar(theta, bar_data, width=width, color=colors[pop], label=pop)
         mean_angle = np.round(np.rad2deg(stat.circmean(np.deg2rad(angle_distrib), high = np.pi, low = -np.pi)), 1)
