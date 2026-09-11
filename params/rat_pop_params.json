@@ -227,8 +227,8 @@
         "properties": {
             "id": "Th",
             "type": "E",
-            "mean_FR": 8,
-            "sd_FR": 1,
+            "mean_FR": 16.49,
+            "sd_FR": 0.52,
             "range_FR": [0,80]
         },
         "outgoing_connections": {
