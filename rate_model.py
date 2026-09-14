@@ -92,7 +92,7 @@ class Network:
             np.fill_diagonal(connection_prob, 0)    #avoid autapses when connecting population to itself by setting prob to 0
         
         K_sim = self.K_connections[alpha_pop_id]
-        prob = K_sim/self.size
+        prob = K_sim/n_alpha_neurons
         J_matrix = np.where(connection_prob >= 1-prob, 1, 0) #G is normalized by population size
 
         if G_real==0:
