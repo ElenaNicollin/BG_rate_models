@@ -79,7 +79,7 @@ for x, species in enumerate(species_list):
 
     for loop_name, loop_params in loops.items():
         root_f, G = get_loop_G_critical(data, loop_params)
-        print(species, loop_name, np.round(G, 2), np.round(root_f/(2*3.14), 2))
+        print(species, loop_name, ": Glim =", np.round(G, 2), "freq =", np.round(root_f/(2*3.14), 2), "Hz")
         Glim_values[species].append(abs(G))
     
 for i,(loop_name, loop_params) in enumerate(loops.items()):
@@ -131,7 +131,7 @@ for species in species_list:
         list_axC[n-1].plot(100, 100, ls=ls, lw=lw, marker=mk, ms=ms, color="k", label=species, )
 
 for axCi in list_axC:
-    axCi.axhspan(12, 30, color="lightgrey", alpha=0.4, zorder=-1, ec=None)
+    axCi.axhspan(13, 30, color="#ededed", zorder=-1, ec=None)
     axCi.axhline(y=18, ls="dashed", color="dimgray", zorder=-1, lw=0.75)
     # axi.set_xlabel("sum synaptic delays (ms)", fontsize=14)
     axCi.tick_params('y', labelleft=False)

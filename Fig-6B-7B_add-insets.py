@@ -46,7 +46,7 @@ def run_and_plot_insets_only(fig, n_rows, row, label, G_dict, skip=0, *args, **k
     axwelch = fig.add_subplot(n_rows, n_col, (k+1, k+2))
     # plot_fft(rates, dt, skip=skip, window_size=2, ax=axwelch)
     plot_welch({k:rates[k] for k in ["Proto", "STN", "D2"]}, dt, noise_method, window_size=2, skip=skip, ax=axwelch)
-    axwelch.axvspan(12, 30, color="#ebebeb", zorder=-1)
+    axwelch.axvspan(13, 30, color="#ebebeb", zorder=-1)
     # axwelch.axvline(x=18, ls="dashed", color="dimgray", zorder=-1, lw=0.8)
     axwelch.set_xlim(9,70)
     axwelch.get_legend().remove()

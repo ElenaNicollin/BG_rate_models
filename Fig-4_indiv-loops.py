@@ -33,7 +33,7 @@ skip = 0.5
 t_sim = 4+skip
 dt = 1e-4
 n_steps = int(round(t_sim/dt, 0))
-all_to_all = True
+all_to_all = False
 noise_method = "Ornstein-Uhlenbeck" #can be None, "Gaussian", or "Ornstein-Uhlenbeck"
 
 fig_fft, ax_fft = plt.subplots(1,2, squeeze=True, sharex=True)
@@ -47,6 +47,7 @@ with PdfPages(f"outputs/rate/{args.outfile}.pdf") as pdf:
     for s, species in enumerate(species_list):
         ax_fft[s].set_title(species.upper(), fontsize=20)
         ax_fft[s].set_xlabel("Frequency (Hz)")
+        ax_fft[s].axvspan(13, 30, color="#ededed", zorder=-1, ec=None)
 
         params_file = f"params/{species}_pop_params.json"
         input_params = load_params(params_file)
@@ -74,7 +75,8 @@ with PdfPages(f"outputs/rate/{args.outfile}.pdf") as pdf:
             loop_network = np.unique(nuclei).tolist()
 
             # get G* for current loop
-            _, G = get_loop_G_critical(data, loop_params)
+            root_f, G = get_loop_G_critical(data, loop_params)
+            theory_freq = root_f / (2*np.pi)
 
             # set G values such that this loop will drive oscillations
             new_G = (np.abs(G))**(1/len(loop_network))
@@ -116,6 +118,7 @@ with PdfPages(f"outputs/rate/{args.outfile}.pdf") as pdf:
             f_Proto, fft_Proto = compute_fft_of_signal(np.mean(rates["Proto"], 0)[int(round(skip/dt, 0)):], dt, window_size=1)
             area = np.sum(fft_Proto)
             ax_fft[s].plot(f_Proto, fft_Proto/area, color=loop_params["color"], label=loop_name)
+            ax_fft[s].axvline(theory_freq, color=loop_params["color"], ls="dashed", lw=1, label=f"{loop_name} theory")
             ax_fft[s].spines[['right', 'top']].set_visible(False)
 
     ax_fft[0].set_ylabel("normalized FFT power")
