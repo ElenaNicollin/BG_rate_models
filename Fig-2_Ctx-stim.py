@@ -261,7 +261,7 @@ for col, species in enumerate(["rat", "monkey"]):
 
 
     #### Fig C
-    ## Inhib STN
+    ## Inhib STN or GPe
     for i in range(2):
         ax3[2*col+i].plot(np.arange(0, (0.1+pre_rate_t), dt)-pre_rate_t, mean_rates["GPi"], color="k", ls="-", alpha=0.4)
 
@@ -282,6 +282,7 @@ for col, species in enumerate(["rat", "monkey"]):
             stim_dict["Ctx"][int(round((stim_t)/dt, 0)) : int(round((stim_t+stim_duration)/dt, 0))] = 1800
     prop_GPe_blocked = 0.7
     stims_with_pharmaco["GPe blockade"]["Proto"][:, :int(n_model*prop_GPe_blocked)] = -1000
+    stims_with_pharmaco["GPe blockade"]["Arky"][:, :int(n_model*prop_GPe_blocked)] = -1000
 
 
     G_dict = {k:v for k,v in G_default.items()}
