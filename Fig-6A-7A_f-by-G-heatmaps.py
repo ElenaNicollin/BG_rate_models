@@ -9,6 +9,8 @@ from rate_model import *
 from rate_analysis import *
 from utils import *
 
+plt.rcParams['font.family'] = 'Arial'
+
 parser = argparse.ArgumentParser(
         prog='Fig. 6A-7A: Heatmap',
         description='Run simulations, extract peak frequency, plot heatmap')
@@ -62,7 +64,7 @@ loops = json.load(open("params/graphical_params.json"))["loops"]
 G_Proto_to_Proto_values = np.linspace(0, 1.5, 4)
 G_STN_to_Proto_values = np.linspace(0, 3.5, 15) if species=="rat" else np.linspace(0, 2.5, 11)
 G_D2_to_Proto_values = np.linspace(0, 5, 11) #if species=="rat" else np.linspace(0, 6, 13)
-G_GPi_to_Th_values = np.linspace(0, 2, 5)
+G_GPi_to_Th_values = np.linspace(0, 3, 4)
 G_values = [G_Proto_to_Proto_values, G_STN_to_Proto_values, G_D2_to_Proto_values, G_GPi_to_Th_values]
 
 n_tot = len(G_Proto_to_Proto_values) * len(G_STN_to_Proto_values) * len(G_D2_to_Proto_values) *len(G_GPi_to_Th_values)
@@ -101,11 +103,11 @@ start=time.time()
 for a, G_Proto_to_Proto in enumerate(G_Proto_to_Proto_values):
     connectivity_params["Proto"]["Proto"]["G"] = G_Proto_to_Proto
     for b, G_STN_to_Proto in enumerate(G_STN_to_Proto_values):
-        connectivity_params["D2"]["Proto"]["G"] = G_STN_to_Proto
+        connectivity_params["STN"]["Proto"]["G"] = G_STN_to_Proto
         for c, G_D2_to_Proto in enumerate(G_D2_to_Proto_values):
-            connectivity_params["Proto"]["Proto"]["G"] = G_Proto_to_Proto
+            connectivity_params["D2"]["Proto"]["G"] = G_D2_to_Proto
             for d, G_GPi_to_Th in enumerate(G_GPi_to_Th_values):
-                connectivity_params["Ctx"]["STN"]["G"] = G_D2_to_Proto
+                connectivity_params["GPi"]["Th"]["G"] = G_GPi_to_Th
                 print(f"progress {i}/{n_tot}")
                 
                 reconnect(all_pops, connectivity_params)
@@ -152,7 +154,7 @@ with PdfPages(f"outputs/rate/{outfile_pdf}") as pdf:
                                             yvalues=G_D2_to_Proto_values, ylabel=ylab, ax=axi)
 
     fig.text(0.44, 0.92, "|G Proto-Proto|", ha='center', fontsize=14)
-    fig.text(0, 0.5, "|G Ctx-STN|", va='center', rotation='vertical', fontsize=14)
+    fig.text(0, 0.5, "|G GPi-Th|", va='center', rotation='vertical', fontsize=14)
 
     #for axi, G_Proto_to_Proto in zip(ax[0], G_Proto_to_Proto_values):
     #for axi, G_GPi_to_Th in zip(ax[:,0], G_GPi_to_Th_values):

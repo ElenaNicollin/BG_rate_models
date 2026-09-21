@@ -11,6 +11,8 @@ from rate_model import *
 from rate_analysis import *
 from utils import *
 
+plt.rcParams['font.family'] = 'Arial'
+
 
 parser = argparse.ArgumentParser(
         prog='Fig. 6B-7B: Heatmap and insets',
