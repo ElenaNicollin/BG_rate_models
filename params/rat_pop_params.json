@@ -121,7 +121,7 @@
             "n_real": [0.475, 2.79e6],
             "type": "I",
             "mean_FR": 0.49,
-            "sd_FR": 0.14,
+            "sd_FR": 0.4,
             "range_FR": [0,30]
         },
         "outgoing_connections": {
@@ -227,8 +227,8 @@
         "properties": {
             "id": "Th",
             "type": "E",
-            "mean_FR": 16.49,
-            "sd_FR": 0.52,
+            "mean_FR": 16.5,
+            "sd_FR": 3,
             "range_FR": [0,80]
         },
         "outgoing_connections": {
