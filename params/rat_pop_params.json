@@ -102,7 +102,7 @@
             "n_real": [0.475, 2.79e6],
             "type": "I",
             "mean_FR": 1.05,
-            "sd_FR": 0.1,
+            "sd_FR": 0.5,
             "range_FR": [0,5]
         },
         "outgoing_connections": {

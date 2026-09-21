@@ -199,7 +199,7 @@
             "n_real": [0.475, 2.79e6],
             "type": "I",
             "mean_FR_Ctrl": 1.05,
-            "sd_FR_Ctrl": 0.1,
+            "sd_FR_Ctrl": 0.5,
             "mean_FR_DD": 1.15,
             "sd_FR_DD": 0.2,
             "range_FR": [0,5],
